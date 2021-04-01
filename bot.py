@@ -285,6 +285,7 @@ def phone_number(update, context):
 def complaint(update, context):
     user_complaint = update.message.text
     context.user_data["contact"]["complaint"] = user_complaint
+    user_data = context.user_data 
     user_text = f"""
 Ваш прием состоится {int(user_data['day'])} {month_name} ({weekday_name}) в {str(user_data['time'].strftime('%H:%M'))}
 <b>ФИО:</b> {context.user_data['contact']['name']}
