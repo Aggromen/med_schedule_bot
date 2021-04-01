@@ -98,7 +98,7 @@ def get_days_events(start_date):
         event_start_end['start'] = start
         event_start_end['end'] = end
         events_list.append(event_start_end)
-        print(event_start_end)
+        # print(event_start_end)
 
     return events_list 
 
@@ -196,7 +196,7 @@ def get_days_from_month(update, context):
     keyboard = get_keyboard_from_list(list_of_avaliable_days, 5)
     keyboard.append(['/back_to_month'])
     keyboard.append(['/cancel'])
-    print(start_date)
+    # print(start_date)
     update.message.reply_text(
         "Выберите дату", 
         reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True)
@@ -216,7 +216,7 @@ def available_time_window_list_handler(update, context):
     keyboard_window_time = get_keyboard_from_list(available_time_window, 5)
     keyboard_window_time.append(['/back_to_day'])
     keyboard_window_time.append(['/cancel'])
-    print(start_date)
+    # print(start_date)
     update.message.reply_text(
         "Выберите время", 
         reply_markup=ReplyKeyboardMarkup(keyboard_window_time, one_time_keyboard=True)
@@ -239,7 +239,7 @@ def comfirm_month_day_time_choice(update, context):
         weekday_name = 'Воскресенье'
     ans_string = f"Ваш прием состоится {int(user_data['day'])} {month_name} ({weekday_name}) в {str(user_data['time'].strftime('%H:%M'))}"
     keyboard = [['/confirm'], ['/back_to_time'], ['/cancel']]
-    print(start_date)
+    # print(start_date)
     update.message.reply_text(
         ans_string,
         reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True)
@@ -259,7 +259,7 @@ def confirm_month_day_time_app(update, context):
         'Введите ваши фамилию, имя и отчество'
     ) 
     # return ConversationHandler.END
-    print(id_event)
+    # print(id_event)
     return "contact"
 
 def fullname(update, context):
