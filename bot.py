@@ -17,19 +17,10 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 
+import secrets
 
-def get_all_avalible_days(start_date):
-    next_month_day = start_date + relativedelta(months = 1)
-    end_date = next_month_day.replace(day = 1)
-    temp_date = start_date
-    appointment_days = []
-    while temp_date < end_date :
-        # print(temp_date, temp_date.isoweekday())
-        if temp_date.isoweekday() == 3 or temp_date.isoweekday() == 7:
-            if len(available_time_window_list(temp_date)) > 0:
-                appointment_days.append(temp_date.day)
-        temp_date = temp_date + timedelta(days = +1)
-    return appointment_days  
+
+
 
 def get_calendar_service():
     SCOPES = ['https://www.googleapis.com/auth/calendar']
@@ -50,22 +41,39 @@ def get_calendar_service():
     service = build('calendar', 'v3', credentials=creds)
     return service
 
+
 service = get_calendar_service() 
+
+def get_all_avalible_days(start_date):
+    next_month_day = start_date + relativedelta(months = 1)
+    end_date = next_month_day.replace(day = 1)
+    temp_date = start_date
+    appointment_days = []
+    while temp_date < end_date :
+        # print(temp_date, temp_date.isoweekday())
+        if temp_date.isoweekday() == 3 or temp_date.isoweekday() == 7:
+            if len(available_time_window_list(temp_date)) > 0:
+                appointment_days.append(temp_date.day)
+        temp_date = temp_date + timedelta(days = +1)
+    return appointment_days  
 
 def make_calendar_event(start_date):
     # service = get_calendar_service()
 
     start = start_date.isoformat()
     end = (start_date + timedelta(hours=1)).isoformat()
+    id_event = secrets.token_hex(32)
 
-    event_result = service.events().insert(calendarId='primary',
+    event_result = service.events().insert(calendarId='kolupaev.vladislav@gmail.com',
         body={
             "summary": 'Automating calendar',
             "description": 'This is a tutorial example of automating google calendar with python',
             "start": {"dateTime": start, "timeZone": 'Europe/Moscow'},
             "end": {"dateTime": end, "timeZone": 'Europe/Moscow'},
+            "id" : id_event,
         }
     ).execute()
+    return id_event
 
 def get_days_events(start_date):
     # service = get_calendar_service() 
@@ -74,7 +82,7 @@ def get_days_events(start_date):
 
     max_time = start_date.replace(hour = 21, minute = 0).isoformat() + 'Z'
 
-    events_result = service.events().list(calendarId='primary', timeMin=min_time,
+    events_result = service.events().list(calendarId='kolupaev.vladislav@gmail.com', timeMin=min_time,
                                         timeMax=max_time, singleEvents=True,
                                         orderBy='startTime').execute()
     events = events_result.get('items', [])
@@ -90,6 +98,7 @@ def get_days_events(start_date):
         event_start_end['start'] = start
         event_start_end['end'] = end
         events_list.append(event_start_end)
+        print(event_start_end)
 
     return events_list 
 
@@ -122,7 +131,7 @@ def reg_appointment_event(start_date):
     }
     }
 
-    event = service.events().insert(calendarId='primary', body=event).execute()
+    event = service.events().insert(calendarId='kolupaev.vladislav@gmail.com', body=event).execute()
 
 
 
@@ -187,6 +196,7 @@ def get_days_from_month(update, context):
     keyboard = get_keyboard_from_list(list_of_avaliable_days, 5)
     keyboard.append(['/back_to_month'])
     keyboard.append(['/cancel'])
+    print(start_date)
     update.message.reply_text(
         "Выберите дату", 
         reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True)
@@ -206,6 +216,7 @@ def available_time_window_list_handler(update, context):
     keyboard_window_time = get_keyboard_from_list(available_time_window, 5)
     keyboard_window_time.append(['/back_to_day'])
     keyboard_window_time.append(['/cancel'])
+    print(start_date)
     update.message.reply_text(
         "Выберите время", 
         reply_markup=ReplyKeyboardMarkup(keyboard_window_time, one_time_keyboard=True)
@@ -228,6 +239,7 @@ def comfirm_month_day_time_choice(update, context):
         weekday_name = 'Воскресенье'
     ans_string = f"Ваш прием состоится {int(user_data['day'])} {month_name} ({weekday_name}) в {str(user_data['time'].strftime('%H:%M'))}"
     keyboard = [['/confirm'], ['/back_to_time'], ['/cancel']]
+    print(start_date)
     update.message.reply_text(
         ans_string,
         reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True)
@@ -241,11 +253,13 @@ def confirm_month_day_time_app(update, context):
         start_date = date.today() + relativedelta(months = 1) 
     start_date = start_date.replace(day=int(user_data['day']))
     start_date = datetime.combine(start_date, user_data['time'])
-    make_calendar_event(start_date)
+    id_event = make_calendar_event(start_date)
+    user_data['id_event'] = id_event
     update.message.reply_text(
         'Введите '
     ) 
     # return ConversationHandler.END
+    print(id_event)
     return "contact"
 
 def fullname(update, context):
