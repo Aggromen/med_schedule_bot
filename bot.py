@@ -268,23 +268,24 @@ def fullname(update, context):
         update.message.reply_text("Пожалуйста, напишите фамилию, имя и отчество")
         return "contact"
     else:
-        context.user_data["contact"] = {"name": user_name}
+        context.user_data['contact'] = {"name": user_name}
         update.message.reply_text("Укажите ваш номер телефона в формате 8_________")
         return "contact"
 
 def phone_number(update, context):
     user_phone_number = update.message.text
+    print(context.user_data['contact'])
     if len(user_phone_number) != 11:
         update.message.reply_text("Укажите номер в формате 8__________")
         return "contact"
     else:
-        context.user_data["contact"] = {"phone_number": user_phone_number}
+        context.user_data['contact']['phone_number'] = user_phone_number
         update.message.reply_text("Что вас беспокоит?")
         return "complaint"
 
 def complaint(update, context):
     user_complaint = update.message.text
-    context.user_data["contact"]["complaint"] = user_complaint
+    context.user_data['contact']['complaint'] = user_complaint
     user_data = context.user_data
     if user_data['month'] == 'cur_month':
         month_name = get_name_cur_and_next_month()[0]
@@ -297,11 +298,12 @@ def complaint(update, context):
         weekday_name = 'Среда'
     else:
         weekday_name = 'Воскресенье'
+    print(user_data['contact'])
     user_text = f"""
 Ваш прием состоится {int(user_data['day'])} {month_name} ({weekday_name}) в {str(user_data['time'].strftime('%H:%M'))}
-<b>ФИО:</b> {context.user_data['contact']['name']}
-<b>Тел:</b> {context.user_data['contact']['phone_number']}
-<b>Жалобы:</b> {context.user_data['contact']['complaint']}"""
+<b>ФИО:</b> {user_data['contact']['name']}
+<b>Тел:</b> {user_data['contact']['phone_number']}
+<b>Жалобы:</b> {user_data['contact']['complaint']}"""
     keyboard = [['/confirm'], ['/change_cell_number'], ['/cancel']]
     update.message.reply_text(user_text,
         reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True), parse_mode=ParseMode.HTML
