@@ -9,7 +9,7 @@ import settings
 from utils import get_keyboard_from_list, month_choice_keyboard, get_name_cur_and_next_month
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler, CallbackQueryHandler
-from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import ParseMode, ReplyKeyboardMarkup, ReplyKeyboardRemove, InlineKeyboardButton, InlineKeyboardMarkup
 
 import os.path
 from googleapiclient.discovery import build
@@ -243,7 +243,7 @@ def confirm_month_day_time_app(update, context):
     start_date = datetime.combine(start_date, user_data['time'])
     make_calendar_event(start_date)
     update.message.reply_text(
-        'Введите '
+        'Введите ваши фамилию, имя и отчество'
     ) 
     # return ConversationHandler.END
     return "contact"
@@ -251,7 +251,7 @@ def confirm_month_day_time_app(update, context):
 def fullname(update, context):
     user_name = update.message.text
     if len(user_name.split()) < 3:
-        update.message.reply_text("Пожалуйста, напишите имя, фамилию и отчество")
+        update.message.reply_text("Пожалуйста, напишите фамилию, имя и отчество")
         return "contact"
     else:
         context.user_data["contact"] = {"name": user_name}
@@ -270,16 +270,22 @@ def phone_number(update, context):
 
 def complaint(update, context):
     user_complaint = update.message.text
-    context.user_data["contact"] = {"complaint": user_complaint}
-    update.message.reply_text("Спасибо, до встречи")
-    return ConversationHandler.END
+    context.user_data["contact"]["complaint"] = user_complaint
+    user_text = f"""
+Ваш прием состоится {int(user_data['day'])} {month_name} ({weekday_name}) в {str(user_data['time'].strftime('%H:%M'))}
+<b>ФИО:</b> {context.user_data['contact']['name']}
+<b>Тел:</b> {context.user_data['contact']['phone_number']}
+<b>Жалобы:</b> {context.user_data['contact']['complaint']}"""
+    keyboard = [['/Подтвердить'], ['/Изменить номер телефона'], ['/Отмена']]
+    update.message.reply_text(user_text,
+        reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True), parse_mode=ParseMode.HTML
+    )
 
 def cancel(update, context):
     update.message.reply_text(
         'Для записи на прием наберите /start!'
     )
     return ConversationHandler.END
-
 
 def main():
     mybot = Updater(settings.BOT_KEY, use_context=True)
@@ -303,7 +309,10 @@ def main():
                 MessageHandler(Filters.text, fullname)
                 ],
             "complaint" : [
-                MessageHandler(Filters.text, complaint)
+                MessageHandler(Filters.text, complaint),
+                CommandHandler('Изменить жалобу', phone_number),
+                CommandHandler('Изменить номер телефона', fullname),
+              
                 ]
         },
         fallbacks=[CommandHandler('cancel', cancel), "contact"]
