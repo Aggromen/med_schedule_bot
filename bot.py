@@ -285,7 +285,18 @@ def phone_number(update, context):
 def complaint(update, context):
     user_complaint = update.message.text
     context.user_data["contact"]["complaint"] = user_complaint
-    user_data = context.user_data 
+    user_data = context.user_data
+    if user_data['month'] == 'cur_month':
+        month_name = get_name_cur_and_next_month()[0]
+        start_date = date.today()
+    else:
+        month_name = get_name_cur_and_next_month()[1]
+        start_date = date.today() + relativedelta(months = 1) 
+    start_date = start_date.replace(day=int(user_data['day']))
+    if start_date.isoweekday() == 3:
+        weekday_name = 'Среда'
+    else:
+        weekday_name = 'Воскресенье'
     user_text = f"""
 Ваш прием состоится {int(user_data['day'])} {month_name} ({weekday_name}) в {str(user_data['time'].strftime('%H:%M'))}
 <b>ФИО:</b> {context.user_data['contact']['name']}
