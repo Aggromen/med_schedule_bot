@@ -290,7 +290,7 @@ def complaint(update, context):
 <b>ФИО:</b> {context.user_data['contact']['name']}
 <b>Тел:</b> {context.user_data['contact']['phone_number']}
 <b>Жалобы:</b> {context.user_data['contact']['complaint']}"""
-    keyboard = [['/Подтвердить'], ['/Изменить номер телефона'], ['/Отмена']]
+    keyboard = [['/confirm'], ['/change_cell_number'], ['/cancel']]
     update.message.reply_text(user_text,
         reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True), parse_mode=ParseMode.HTML
     )
@@ -324,8 +324,7 @@ def main():
                 ],
             "complaint" : [
                 MessageHandler(Filters.text, complaint),
-                CommandHandler('Изменить жалобу', phone_number),
-                CommandHandler('Изменить номер телефона', fullname),
+                CommandHandler('change_cell_number', fullname)
               
                 ]
         },
